@@ -1,0 +1,111 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Yume Arcade - 游戏库</title>
+  <link rel="stylesheet" href="./styles.css" />
+</head>
+<body>
+  <canvas id="bgEffects" class="bg-effects"></canvas>
+  <header class="nav">
+    <div class="container nav-inner">
+      <a class="brand" href="./index.html">Yume Arcade<span class="badge">ANIME PINK</span></a>
+      <nav class="menu">
+        <a href="./index.html">首页</a>
+        <a class="active" href="./games.html">游戏库</a>
+        <a href="./devlog.html">开发日志</a>
+      </nav>
+    </div>
+  </header>
+  <main class="container">
+    <section class="hero">
+      <h1>游戏库</h1>
+      <p>上传封面并绑定链接，卡片会自动加入并支持点击游玩。</p>
+    </section>
+    <section class="upload-panel panel">
+      <div class="field">
+        <label for="coverInput">游戏封面图片</label>
+        <input id="coverInput" type="file" accept="image/*" />
+      </div>
+      <div class="field">
+        <label for="urlInput">游戏链接</label>
+        <input id="urlInput" type="url" placeholder="https://example.com/my-game" />
+      </div>
+      <button id="addBtn" class="btn" type="button">添加游戏卡片</button>
+    </section>
+    <section id="games" class="games"></section>
+  </main>
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-grid">
+        <div>
+          <h4>Yume Arcade</h4>
+          <p>独立开发者的粉色宇宙，收录我的像素冒险、视觉小说和轻度休闲游戏。</p>
+          <p>让每一次点击都像进入番剧开场。</p>
+        </div>
+        <div>
+          <h4>产品</h4>
+          <a href="./games.html">游戏列表</a>
+          <a href="./devlog.html">开发日志</a>
+          <a href="./games.html">版本更新</a>
+        </div>
+        <div>
+          <h4>资源</h4>
+          <a href="./devlog.html">设计笔记</a>
+          <a href="./games.html">封面库</a>
+          <a href="./index.html">FAQ</a>
+        </div>
+        <div>
+          <h4>联系我</h4>
+          <a href="#">Bilibili</a>
+          <a href="#">X / Twitter</a>
+          <a href="#">邮箱</a>
+        </div>
+      </div>
+      <div class="copyright">
+        <span>© 2026 Yume Arcade. All rights reserved.</span>
+        <span>Made with Love & Pink</span>
+      </div>
+    </div>
+  </footer>
+  <script src="./games-data.js"></script>
+  <script src="./effects.js"></script>
+  <script>
+    const gamesEl = document.getElementById("games");
+    const coverInput = document.getElementById("coverInput");
+    const urlInput = document.getElementById("urlInput");
+    const addBtn = document.getElementById("addBtn");
+
+    function renderGames(games) {
+      gamesEl.innerHTML = games.map((game, index) => gameCardTemplate(game, index)).join("");
+    }
+
+    addBtn.addEventListener("click", async () => {
+      const file = coverInput.files[0];
+      const url = urlInput.value.trim();
+      if (!file) {
+        alert("请先选择一张封面图。");
+        return;
+      }
+      if (!url || !/^https?:\/\//i.test(url)) {
+        alert("请填写正确的游戏链接（以 http:// 或 https:// 开头）。");
+        return;
+      }
+      const games = loadGames();
+      const cover = await toDataUrl(file);
+      games.unshift({
+        title: file.name.replace(/\.[^/.]+$/, ""),
+        cover,
+        url
+      });
+      saveGames(games);
+      renderGames(games);
+      coverInput.value = "";
+      urlInput.value = "";
+    });
+
+    renderGames(loadGames());
+  </script>
+</body>
+</html>

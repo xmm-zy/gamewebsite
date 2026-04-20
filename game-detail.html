@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Yume Arcade - 游戏详情</title>
+  <link rel="stylesheet" href="./styles.css" />
+</head>
+<body>
+  <canvas id="bgEffects" class="bg-effects"></canvas>
+  <header class="nav">
+    <div class="container nav-inner">
+      <a class="brand" href="./index.html">Yume Arcade<span class="badge">ANIME PINK</span></a>
+      <nav class="menu">
+        <a href="./index.html">首页</a>
+        <a class="active" href="./games.html">游戏库</a>
+        <a href="./devlog.html">开发日志</a>
+      </nav>
+    </div>
+  </header>
+  <main class="container">
+    <section class="hero">
+      <h1>游戏详情</h1>
+      <p>在这里查看作品信息，然后点击按钮正式进入游戏。</p>
+    </section>
+    <section id="detailRoot" class="detail-wrap panel"></section>
+  </main>
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-grid">
+        <div>
+          <h4>Yume Arcade</h4>
+          <p>独立开发者的粉色宇宙，收录我的像素冒险、视觉小说和轻度休闲游戏。</p>
+          <p>让每一次点击都像进入番剧开场。</p>
+        </div>
+        <div>
+          <h4>产品</h4>
+          <a href="./games.html">游戏列表</a>
+          <a href="./devlog.html">开发日志</a>
+          <a href="./games.html">版本更新</a>
+        </div>
+        <div>
+          <h4>资源</h4>
+          <a href="./devlog.html">设计笔记</a>
+          <a href="./games.html">封面库</a>
+          <a href="./index.html">FAQ</a>
+        </div>
+        <div>
+          <h4>联系我</h4>
+          <a href="#">Bilibili</a>
+          <a href="#">X / Twitter</a>
+          <a href="#">邮箱</a>
+        </div>
+      </div>
+      <div class="copyright">
+        <span>© 2026 Yume Arcade. All rights reserved.</span>
+        <span>Made with Love & Pink</span>
+      </div>
+    </div>
+  </footer>
+  <script src="./games-data.js"></script>
+  <script src="./effects.js"></script>
+  <script>
+    const detailRoot = document.getElementById("detailRoot");
+    const params = new URLSearchParams(window.location.search);
+    const id = Number(params.get("id"));
+    const games = loadGames();
+    const game = games[id];
+
+    if (!Number.isInteger(id) || id < 0 || !game) {
+      detailRoot.innerHTML = `
+        <div>
+          <h2 class="detail-title">没有找到这个游戏</h2>
+          <p class="detail-desc">可能是链接失效，或者该游戏已被删除。你可以回到游戏库重新选择。</p>
+          <div class="detail-actions">
+            <a class="btn" href="./games.html">返回游戏库</a>
+          </div>
+        </div>
+      `;
+    } else {
+      detailRoot.innerHTML = `
+        <img class="detail-cover" src="${game.cover}" alt="${game.title}" />
+        <div>
+          <h2 class="detail-title">${game.title}</h2>
+          <p class="detail-desc">
+            这是你的游戏作品展示页。你可以在这里放置剧情简介、玩法亮点、操作说明。
+            当前已绑定游戏链接，点击下方按钮即可开始游玩。
+          </p>
+          <div class="detail-actions">
+            <a class="btn" href="${game.url}" target="_blank" rel="noopener noreferrer">开始游戏</a>
+            <a class="btn alt" href="./games.html">返回游戏库</a>
+          </div>
+        </div>
+      `;
+    }
+  </script>
+</body>
+</html>
