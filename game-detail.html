@@ -3,7 +3,20 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Yume Arcade - 游戏详情</title>
+  <title>Game Detail | QQQ's Game Website</title>
+  <meta name="description" content="View game details, cover art, and launch the selected game from QQQ's Game Website." />
+  <meta name="robots" content="index,follow,max-image-preview:large" />
+  <link rel="canonical" href="https://anonweb.top/game-detail.html" />
+  <meta property="og:type" content="website" />
+  <meta property="og:site_name" content="QQQ's Game Website" />
+  <meta property="og:title" content="Game Detail | QQQ's Game Website" />
+  <meta property="og:description" content="View game details, cover art, and launch the selected game." />
+  <meta property="og:url" content="https://anonweb.top/game-detail.html" />
+  <meta property="og:image" content="https://anonweb.top/og-cover.jpg" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Game Detail | QQQ's Game Website" />
+  <meta name="twitter:description" content="View game details, cover art, and launch the selected game." />
+  <meta name="twitter:image" content="https://anonweb.top/og-cover.jpg" />
   <link rel="stylesheet" href="./styles.css" />
 </head>
 <body>
@@ -78,6 +91,11 @@
         </div>
       `;
     } else {
+      document.title = `${game.title} | QQQ's Game Website`;
+      const description = `Play ${game.title} on QQQ's Game Website. View details then launch the game.`;
+      const metaDescription = document.querySelector('meta[name="description"]');
+      if (metaDescription) metaDescription.setAttribute("content", description);
+
       detailRoot.innerHTML = `
         <img class="detail-cover" src="${game.cover}" alt="${game.title}" />
         <div>
