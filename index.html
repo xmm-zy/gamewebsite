@@ -46,6 +46,24 @@
 
     <h2 class="section-title">精选游戏</h2>
     <section id="featuredGames" class="games"></section>
+
+    <h2 class="section-title">Supabase 多端协同 Demo</h2>
+    <section class="hero" style="margin-top: 16px;">
+      <p>登录同一账号后，在不同设备上可实时看到待办变更。</p>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin:10px 0 16px;">
+        <input id="emailInput" type="email" placeholder="输入邮箱用于登录" style="padding:8px 10px;min-width:240px;" />
+        <button id="sendOtpBtn" class="btn" type="button">发送登录链接</button>
+        <button id="logoutBtn" class="btn alt" type="button" style="display:none;">退出登录</button>
+      </div>
+      <p id="authStatus">未登录</p>
+      <div id="todoArea" style="display:none;">
+        <div style="display:flex;gap:8px;flex-wrap:wrap;margin:8px 0 12px;">
+          <input id="todoInput" type="text" maxlength="200" placeholder="新增待办..." style="padding:8px 10px;min-width:240px;" />
+          <button id="addTodoBtn" class="btn" type="button">新增</button>
+        </div>
+        <ul id="todoList" style="list-style:none;padding-left:0;display:grid;gap:8px;"></ul>
+      </div>
+    </section>
   </main>
 
   <footer class="footer">
@@ -85,6 +103,187 @@
 
   <script src="./games-data.js"></script>
   <script src="./effects.js"></script>
+  <script type="module">
+    import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
+
+    // 1) 替换成你自己的 Supabase 项目参数
+    const SUPABASE_URL = "https://dehjilvkbkctgwfwmmgu.supabase.co";
+    const SUPABASE_ANON_KEY = "sb_publishable_bd3h6vaef45uI8Gximh9GQ_pOMwxouA";
+    const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    const emailInput = document.getElementById("emailInput");
+    const sendOtpBtn = document.getElementById("sendOtpBtn");
+    const logoutBtn = document.getElementById("logoutBtn");
+    const authStatus = document.getElementById("authStatus");
+    const todoArea = document.getElementById("todoArea");
+    const todoInput = document.getElementById("todoInput");
+    const addTodoBtn = document.getElementById("addTodoBtn");
+    const todoList = document.getElementById("todoList");
+
+    let currentUser = null;
+    let channel = null;
+
+    function escapeHtml(text) {
+      return text
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+    }
+
+    function renderTodos(todos) {
+      if (!todos.length) {
+        todoList.innerHTML = "<li>暂无待办，先新增一条吧。</li>";
+        return;
+      }
+
+      todoList.innerHTML = todos
+        .map((todo) => {
+          const checked = todo.done ? "checked" : "";
+          const doneStyle = todo.done ? "text-decoration:line-through;opacity:0.7;" : "";
+          return `
+            <li style="display:flex;align-items:center;gap:8px;">
+              <input data-id="${todo.id}" class="toggle-todo" type="checkbox" ${checked} />
+              <span style="flex:1;${doneStyle}">${escapeHtml(todo.content)}</span>
+              <button data-id="${todo.id}" class="delete-todo btn alt" type="button" style="padding:6px 10px;">删除</button>
+            </li>
+          `;
+        })
+        .join("");
+    }
+
+    async function loadTodos() {
+      if (!currentUser) return;
+      const { data, error } = await supabase
+        .from("todos")
+        .select("id, content, done, updated_at")
+        .order("updated_at", { ascending: false });
+
+      if (error) {
+        authStatus.textContent = `读取待办失败: ${error.message}`;
+        return;
+      }
+
+      renderTodos(data || []);
+    }
+
+    async function setupRealtime() {
+      if (channel) {
+        await supabase.removeChannel(channel);
+      }
+
+      channel = supabase
+        .channel("todos-realtime")
+        .on(
+          "postgres_changes",
+          { event: "*", schema: "public", table: "todos" },
+          async () => {
+            await loadTodos();
+          }
+        )
+        .subscribe();
+    }
+
+    async function setSessionUI() {
+      const { data } = await supabase.auth.getUser();
+      currentUser = data.user || null;
+
+      if (!currentUser) {
+        authStatus.textContent = "未登录";
+        todoArea.style.display = "none";
+        logoutBtn.style.display = "none";
+        return;
+      }
+
+      authStatus.textContent = `已登录: ${currentUser.email}`;
+      todoArea.style.display = "block";
+      logoutBtn.style.display = "inline-block";
+      await loadTodos();
+      await setupRealtime();
+    }
+
+    sendOtpBtn.addEventListener("click", async () => {
+      const email = emailInput.value.trim();
+      if (!email) {
+        authStatus.textContent = "请先输入邮箱。";
+        return;
+      }
+
+      const { error } = await supabase.auth.signInWithOtp({
+        email,
+        options: {
+          emailRedirectTo: window.location.href
+        }
+      });
+
+      authStatus.textContent = error
+        ? `发送失败: ${error.message}`
+        : "已发送登录链接，请去邮箱点击确认。";
+    });
+
+    logoutBtn.addEventListener("click", async () => {
+      await supabase.auth.signOut();
+      currentUser = null;
+      if (channel) {
+        await supabase.removeChannel(channel);
+        channel = null;
+      }
+      await setSessionUI();
+    });
+
+    addTodoBtn.addEventListener("click", async () => {
+      const content = todoInput.value.trim();
+      if (!content || !currentUser) return;
+
+      const { error } = await supabase.from("todos").insert({
+        user_id: currentUser.id,
+        content,
+        done: false
+      });
+
+      if (error) {
+        authStatus.textContent = `新增失败: ${error.message}`;
+        return;
+      }
+
+      todoInput.value = "";
+      await loadTodos();
+    });
+
+    todoList.addEventListener("click", async (event) => {
+      const target = event.target;
+      if (!(target instanceof HTMLElement)) return;
+
+      if (target.classList.contains("delete-todo")) {
+        const id = target.dataset.id;
+        if (!id) return;
+        const { error } = await supabase.from("todos").delete().eq("id", id);
+        if (error) authStatus.textContent = `删除失败: ${error.message}`;
+      }
+    });
+
+    todoList.addEventListener("change", async (event) => {
+      const target = event.target;
+      if (!(target instanceof HTMLInputElement)) return;
+      if (!target.classList.contains("toggle-todo")) return;
+      const id = target.dataset.id;
+      if (!id) return;
+
+      const { error } = await supabase
+        .from("todos")
+        .update({ done: target.checked })
+        .eq("id", id);
+
+      if (error) authStatus.textContent = `更新失败: ${error.message}`;
+    });
+
+    supabase.auth.onAuthStateChange(async () => {
+      await setSessionUI();
+    });
+
+    await setSessionUI();
+  </script>
   <script>
     const featuredGames = document.getElementById("featuredGames");
     featuredGames.innerHTML = loadGames().slice(0, 3).map((game, index) => gameCardTemplate(game, index)).join("");
