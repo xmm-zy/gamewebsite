@@ -38,6 +38,12 @@
       <p>上传封面并绑定链接，卡片会自动加入并支持点击游玩。</p>
     </section>
     <section class="upload-panel panel">
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px;">
+        <input id="emailInput" type="email" placeholder="输入邮箱用于登录" style="padding:8px 10px;min-width:240px;" />
+        <button id="sendOtpBtn" class="btn" type="button">发送登录链接</button>
+        <button id="logoutBtn" class="btn alt" type="button" style="display:none;">退出登录</button>
+      </div>
+      <p id="authStatus" style="margin:0 0 12px;">未登录（登录后可上传）</p>
       <div class="field">
         <label for="coverInput">游戏封面图片</label>
         <input id="coverInput" type="file" accept="image/*" />
@@ -83,19 +89,135 @@
       </div>
     </div>
   </footer>
-  <script src="./games-data.js"></script>
   <script src="./effects.js"></script>
-  <script>
+  <script type="module">
+    import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
+
+    const SUPABASE_URL = "https://dehjilvkbkctgwfwmmgu.supabase.co";
+    const SUPABASE_ANON_KEY = "sb_publishable_bd3h6vaef45uI8Gximh9GQ_pOMwxouA";
+    const redirectTo = `${window.location.origin}${window.location.pathname}`;
+    const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+      auth: {
+        persistSession: true,
+        autoRefreshToken: true,
+        detectSessionInUrl: true
+      }
+    });
+
     const gamesEl = document.getElementById("games");
+    const emailInput = document.getElementById("emailInput");
+    const sendOtpBtn = document.getElementById("sendOtpBtn");
+    const logoutBtn = document.getElementById("logoutBtn");
+    const authStatus = document.getElementById("authStatus");
     const coverInput = document.getElementById("coverInput");
     const urlInput = document.getElementById("urlInput");
     const addBtn = document.getElementById("addBtn");
+    let currentUser = null;
+    let channel = null;
 
-    function renderGames(games) {
-      gamesEl.innerHTML = games.map((game, index) => gameCardTemplate(game, index)).join("");
+    function escapeHtml(text) {
+      return String(text || "")
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
     }
 
+    function renderGames(games) {
+      if (!games.length) {
+        gamesEl.innerHTML = "<p class=\"panel\" style=\"padding:14px;\">还没有游戏卡片，先上传第一张吧。</p>";
+        return;
+      }
+      gamesEl.innerHTML = games
+        .map((game) => {
+          const owner = game.user_name || game.user_email || "未知用户";
+          const canDelete = currentUser && game.user_id === currentUser.id;
+          const deleteAction = canDelete
+            ? `<button class="btn alt delete-game" data-id="${game.id}" type="button" style="margin-top:8px;">删除</button>`
+            : `<small style="opacity:0.65;">仅上传者可删</small>`;
+          return `
+            <article class="game-card panel">
+              <a href="./game-detail.html?id=${encodeURIComponent(game.id)}">
+                <img class="game-cover" src="${escapeHtml(game.cover)}" alt="${escapeHtml(game.title)}" />
+              </a>
+              <div class="game-info">
+                <h3 class="game-title">${escapeHtml(game.title)}</h3>
+                <p class="game-tip">上传者：${escapeHtml(owner)}</p>
+                <a class="btn" href="./game-detail.html?id=${encodeURIComponent(game.id)}">查看详情</a>
+                ${deleteAction}
+              </div>
+            </article>
+          `;
+        })
+        .join("");
+    }
+
+    async function loadGames() {
+      const { data, error } = await supabase
+        .from("game_cards")
+        .select("id, user_id, user_email, user_name, title, cover, url, created_at")
+        .order("created_at", { ascending: false });
+
+      if (error) {
+        authStatus.textContent = `读取游戏卡片失败: ${error.message}`;
+        return;
+      }
+      renderGames(data || []);
+    }
+
+    async function setupRealtime() {
+      if (channel) await supabase.removeChannel(channel);
+      channel = supabase
+        .channel("games-realtime")
+        .on(
+          "postgres_changes",
+          { event: "*", schema: "public", table: "game_cards" },
+          async () => {
+            await loadGames();
+          }
+        )
+        .subscribe();
+    }
+
+    async function refreshAuthUI() {
+      const { data } = await supabase.auth.getUser();
+      currentUser = data.user || null;
+      if (!currentUser) {
+        authStatus.textContent = "未登录（登录后可上传）";
+        logoutBtn.style.display = "none";
+      } else {
+        const nickname = currentUser.user_metadata?.nickname || currentUser.email;
+        authStatus.textContent = `已登录: ${nickname}`;
+        logoutBtn.style.display = "inline-block";
+      }
+    }
+
+    sendOtpBtn.addEventListener("click", async () => {
+      const email = emailInput.value.trim();
+      if (!email) {
+        authStatus.textContent = "请先输入邮箱。";
+        return;
+      }
+      const { error } = await supabase.auth.signInWithOtp({
+        email,
+        options: { emailRedirectTo: redirectTo }
+      });
+      authStatus.textContent = error
+        ? `发送失败: ${error.message}`
+        : "已发送登录链接，请去邮箱确认。";
+    });
+
+    logoutBtn.addEventListener("click", async () => {
+      await supabase.auth.signOut();
+      await refreshAuthUI();
+    });
+
     addBtn.addEventListener("click", async () => {
+      if (!currentUser) {
+        authStatus.textContent = "请先登录后再上传游戏卡片。";
+        return;
+      }
       const file = coverInput.files[0];
       const url = urlInput.value.trim();
       if (!file) {
@@ -106,20 +228,52 @@
         alert("请填写正确的游戏链接（以 http:// 或 https:// 开头）。");
         return;
       }
-      const games = loadGames();
       const cover = await toDataUrl(file);
-      games.unshift({
-        title: file.name.replace(/\.[^/.]+$/, ""),
+      const title = file.name.replace(/\.[^/.]+$/, "");
+      const nickname = currentUser.user_metadata?.nickname || "";
+      const { error } = await supabase.from("game_cards").insert({
+        user_id: currentUser.id,
+        user_email: currentUser.email || "",
+        user_name: nickname,
+        title,
         cover,
         url
       });
-      saveGames(games);
-      renderGames(games);
+      if (error) {
+        authStatus.textContent = `上传失败: ${error.message}`;
+        return;
+      }
       coverInput.value = "";
       urlInput.value = "";
+      await loadGames();
     });
 
-    renderGames(loadGames());
+    gamesEl.addEventListener("click", async (event) => {
+      const target = event.target;
+      if (!(target instanceof HTMLElement)) return;
+      if (!target.classList.contains("delete-game")) return;
+      const id = target.dataset.id;
+      if (!id) return;
+      const { error } = await supabase
+        .from("game_cards")
+        .delete()
+        .eq("id", id)
+        .eq("user_id", currentUser?.id || "");
+      if (error) {
+        authStatus.textContent = `删除失败: ${error.message}`;
+        return;
+      }
+      await loadGames();
+    });
+
+    supabase.auth.onAuthStateChange(async () => {
+      await refreshAuthUI();
+      await loadGames();
+    });
+
+    await refreshAuthUI();
+    await loadGames();
+    await setupRealtime();
   </script>
 </body>
 </html>

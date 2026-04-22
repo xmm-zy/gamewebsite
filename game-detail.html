@@ -72,16 +72,34 @@
       </div>
     </div>
   </footer>
-  <script src="./games-data.js"></script>
   <script src="./effects.js"></script>
-  <script>
+  <script type="module">
+    import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
+
+    const SUPABASE_URL = "https://dehjilvkbkctgwfwmmgu.supabase.co";
+    const SUPABASE_ANON_KEY = "sb_publishable_bd3h6vaef45uI8Gximh9GQ_pOMwxouA";
+    const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+      auth: {
+        persistSession: true,
+        autoRefreshToken: true,
+        detectSessionInUrl: true
+      }
+    });
+
     const detailRoot = document.getElementById("detailRoot");
     const params = new URLSearchParams(window.location.search);
-    const id = Number(params.get("id"));
-    const games = loadGames();
-    const game = games[id];
+    const id = params.get("id");
 
-    if (!Number.isInteger(id) || id < 0 || !game) {
+    function escapeHtml(text) {
+      return String(text || "")
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+    }
+
+    if (!id) {
       detailRoot.innerHTML = `
         <div>
           <h2 class="detail-title">没有找到这个游戏</h2>
@@ -92,25 +110,45 @@
         </div>
       `;
     } else {
-      document.title = `${game.title} | QQQ's Game Website`;
-      const description = `Play ${game.title} on QQQ's Game Website. View details then launch the game.`;
-      const metaDescription = document.querySelector('meta[name="description"]');
-      if (metaDescription) metaDescription.setAttribute("content", description);
+      const { data: game, error } = await supabase
+        .from("game_cards")
+        .select("id, user_name, user_email, title, cover, url")
+        .eq("id", id)
+        .maybeSingle();
 
-      detailRoot.innerHTML = `
-        <img class="detail-cover" src="${game.cover}" alt="${game.title}" />
-        <div>
-          <h2 class="detail-title">${game.title}</h2>
-          <p class="detail-desc">
-            这是你的游戏作品展示页。你可以在这里放置剧情简介、玩法亮点、操作说明。
-            当前已绑定游戏链接，点击下方按钮即可开始游玩。
-          </p>
-          <div class="detail-actions">
-            <a class="btn" href="${game.url}" target="_blank" rel="noopener noreferrer">开始游戏</a>
-            <a class="btn alt" href="./games.html">返回游戏库</a>
+      if (error || !game) {
+        detailRoot.innerHTML = `
+          <div>
+            <h2 class="detail-title">没有找到这个游戏</h2>
+            <p class="detail-desc">可能是链接失效，或者该游戏已被删除。你可以回到游戏库重新选择。</p>
+            <div class="detail-actions">
+              <a class="btn" href="./games.html">返回游戏库</a>
+            </div>
           </div>
-        </div>
-      `;
+        `;
+      } else {
+        document.title = `${game.title} | QQQ's Game Website`;
+        const description = `Play ${game.title} on QQQ's Game Website. View details then launch the game.`;
+        const metaDescription = document.querySelector('meta[name="description"]');
+        if (metaDescription) metaDescription.setAttribute("content", description);
+        const owner = game.user_name || game.user_email || "未知用户";
+
+        detailRoot.innerHTML = `
+          <img class="detail-cover" src="${escapeHtml(game.cover)}" alt="${escapeHtml(game.title)}" />
+          <div>
+            <h2 class="detail-title">${escapeHtml(game.title)}</h2>
+            <p class="detail-desc">
+              这是你的游戏作品展示页。你可以在这里放置剧情简介、玩法亮点、操作说明。
+              当前已绑定游戏链接，点击下方按钮即可开始游玩。
+            </p>
+            <p class="detail-desc" style="opacity:0.8;">上传者：${escapeHtml(owner)}</p>
+            <div class="detail-actions">
+              <a class="btn" href="${escapeHtml(game.url)}" target="_blank" rel="noopener noreferrer">开始游戏</a>
+              <a class="btn alt" href="./games.html">返回游戏库</a>
+            </div>
+          </div>
+        `;
+      }
     }
   </script>
 </body>
