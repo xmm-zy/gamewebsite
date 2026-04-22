@@ -58,6 +58,14 @@
       <p id="authStatus">未登录</p>
       <div id="todoArea" style="display:none;">
         <div style="display:flex;gap:8px;flex-wrap:wrap;margin:8px 0 12px;">
+          <input id="nicknameInput" type="text" maxlength="30" placeholder="设置昵称（可选）" style="padding:8px 10px;min-width:240px;" />
+          <button id="saveNicknameBtn" class="btn alt" type="button">保存昵称</button>
+          <label style="display:flex;align-items:center;gap:6px;">
+            <input id="mineOnlyCheckbox" type="checkbox" />
+            只看我的上传
+          </label>
+        </div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;margin:8px 0 12px;">
           <input id="todoInput" type="text" maxlength="200" placeholder="新增待办..." style="padding:8px 10px;min-width:240px;" />
           <button id="addTodoBtn" class="btn" type="button">新增</button>
         </div>
@@ -116,12 +124,16 @@
     const logoutBtn = document.getElementById("logoutBtn");
     const authStatus = document.getElementById("authStatus");
     const todoArea = document.getElementById("todoArea");
+    const nicknameInput = document.getElementById("nicknameInput");
+    const saveNicknameBtn = document.getElementById("saveNicknameBtn");
+    const mineOnlyCheckbox = document.getElementById("mineOnlyCheckbox");
     const todoInput = document.getElementById("todoInput");
     const addTodoBtn = document.getElementById("addTodoBtn");
     const todoList = document.getElementById("todoList");
 
     let currentUser = null;
     let channel = null;
+    let mineOnly = false;
 
     function escapeHtml(text) {
       return text
@@ -142,11 +154,19 @@
         .map((todo) => {
           const checked = todo.done ? "checked" : "";
           const doneStyle = todo.done ? "text-decoration:line-through;opacity:0.7;" : "";
+          const uploader = todo.user_name || todo.user_email || "未知用户";
+          const canDelete = currentUser && todo.user_id === currentUser.id;
+          const deleteButton = canDelete
+            ? `<button data-id="${todo.id}" class="delete-todo btn alt" type="button" style="padding:6px 10px;">删除</button>`
+            : `<span style="padding:6px 10px;opacity:0.6;">仅上传者可删</span>`;
           return `
             <li style="display:flex;align-items:center;gap:8px;">
               <input data-id="${todo.id}" class="toggle-todo" type="checkbox" ${checked} />
-              <span style="flex:1;${doneStyle}">${escapeHtml(todo.content)}</span>
-              <button data-id="${todo.id}" class="delete-todo btn alt" type="button" style="padding:6px 10px;">删除</button>
+              <div style="flex:1;display:flex;flex-direction:column;gap:2px;">
+                <span style="${doneStyle}">${escapeHtml(todo.content)}</span>
+                <small style="opacity:0.7;">上传者: ${escapeHtml(uploader)}</small>
+              </div>
+              ${deleteButton}
             </li>
           `;
         })
@@ -155,10 +175,14 @@
 
     async function loadTodos() {
       if (!currentUser) return;
-      const { data, error } = await supabase
+      let query = supabase
         .from("todos")
-        .select("id, content, done, updated_at")
+        .select("id, user_id, user_email, user_name, content, done, updated_at")
         .order("updated_at", { ascending: false });
+      if (mineOnly) {
+        query = query.eq("user_id", currentUser.id);
+      }
+      const { data, error } = await query;
 
       if (error) {
         authStatus.textContent = `读取待办失败: ${error.message}`;
@@ -193,12 +217,21 @@
         authStatus.textContent = "未登录";
         todoArea.style.display = "none";
         logoutBtn.style.display = "none";
+        emailInput.value = "";
+        todoInput.value = "";
+        nicknameInput.value = "";
+        mineOnlyCheckbox.checked = false;
+        mineOnly = false;
+        todoList.innerHTML = "";
         return;
       }
 
-      authStatus.textContent = `已登录: ${currentUser.email}`;
+      const currentNickname = (currentUser.user_metadata && currentUser.user_metadata.nickname) || "";
+      const displayName = currentNickname || currentUser.email;
+      authStatus.textContent = `已登录: ${displayName}`;
       todoArea.style.display = "block";
       logoutBtn.style.display = "inline-block";
+      nicknameInput.value = currentNickname;
       await loadTodos();
       await setupRealtime();
     }
@@ -232,12 +265,36 @@
       await setSessionUI();
     });
 
+    saveNicknameBtn.addEventListener("click", async () => {
+      if (!currentUser) return;
+      const nickname = nicknameInput.value.trim();
+      const { error } = await supabase.auth.updateUser({
+        data: { nickname }
+      });
+      if (error) {
+        authStatus.textContent = `保存昵称失败: ${error.message}`;
+        return;
+      }
+      await setSessionUI();
+      authStatus.textContent = nickname
+        ? `昵称已更新为: ${nickname}`
+        : `已清空昵称，当前显示邮箱: ${currentUser.email}`;
+    });
+
+    mineOnlyCheckbox.addEventListener("change", async () => {
+      mineOnly = mineOnlyCheckbox.checked;
+      await loadTodos();
+    });
+
     addTodoBtn.addEventListener("click", async () => {
       const content = todoInput.value.trim();
       if (!content || !currentUser) return;
+      const nickname = (currentUser.user_metadata && currentUser.user_metadata.nickname) || "";
 
       const { error } = await supabase.from("todos").insert({
         user_id: currentUser.id,
+        user_email: currentUser.email || "",
+        user_name: nickname,
         content,
         done: false
       });
@@ -258,7 +315,11 @@
       if (target.classList.contains("delete-todo")) {
         const id = target.dataset.id;
         if (!id) return;
-        const { error } = await supabase.from("todos").delete().eq("id", id);
+        const { error } = await supabase
+          .from("todos")
+          .delete()
+          .eq("id", id)
+          .eq("user_id", currentUser?.id || "");
         if (error) authStatus.textContent = `删除失败: ${error.message}`;
       }
     });
