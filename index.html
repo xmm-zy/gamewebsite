@@ -36,30 +36,37 @@
 
   <main class="container">
     <section class="hero">
-      <h1>欢迎来到我的二次元游戏空间</h1>
-      <p>粉色主场景 + 樱花星光动效，展示我的游戏作品。点击卡片先进入详情页，再开始游玩。</p>
+      <h1>WELCOME TO MY GAME WEBSITE</h1>
+      <p>点击卡片进入然后再开始游玩</p>
       <div class="cta-row">
-        <a class="btn" href="./games.html">前往游戏库</a>
-        <a class="btn alt" href="./devlog.html">查看开发日志</a>
+        <a class="btn" href="./games.html">游戏库</a>
+        <a class="btn alt" href="./devlog.html">开发日志</a>
       </div>
     </section>
 
     <h2 class="section-title">精选游戏</h2>
     <section id="featuredGames" class="games"></section>
 
-    <h2 class="section-title">Supabase 多端协同 Demo</h2>
+    <h2 class="section-title">Supabase 多端协同 </h2>
     <section class="hero" style="margin-top: 16px;">
       <p>登录同一账号后，在不同设备上可实时看到待办变更。</p>
       <div style="display:flex;gap:8px;flex-wrap:wrap;margin:10px 0 16px;">
         <input id="emailInput" type="email" placeholder="输入邮箱用于登录" style="padding:8px 10px;min-width:240px;" />
-        <button id="sendOtpBtn" class="btn" type="button">发送登录链接</button>
+        <input id="passwordInput" type="password" placeholder="输入密码（至少6位）" style="padding:8px 10px;min-width:240px;" />
+        <button id="signupBtn" class="btn" type="button">注册</button>
+        <button id="loginBtn" class="btn" type="button">密码登录</button>
+        <button id="sendOtpBtn" class="btn alt" type="button">发送登录链接</button>
+        <button id="resetPasswordBtn" class="btn alt" type="button">重置密码邮件</button>
         <button id="logoutBtn" class="btn alt" type="button" style="display:none;">退出登录</button>
       </div>
       <p id="authStatus">未登录</p>
       <div id="todoArea" style="display:none;">
         <div style="display:flex;gap:8px;flex-wrap:wrap;margin:8px 0 12px;">
-          <input id="nicknameInput" type="text" maxlength="30" placeholder="设置昵称（可选）" style="padding:8px 10px;min-width:240px;" />
-          <button id="saveNicknameBtn" class="btn alt" type="button">保存昵称</button>
+          <input id="usernameInput" type="text" maxlength="20" placeholder="用户名（唯一，3-20位）" style="padding:8px 10px;min-width:240px;" />
+          <input id="displayNameInput" type="text" maxlength="30" placeholder="显示名（可选）" style="padding:8px 10px;min-width:240px;" />
+          <input id="avatarInput" type="url" maxlength="300" placeholder="头像 URL（可选）" style="padding:8px 10px;min-width:240px;" />
+          <input id="bioInput" type="text" maxlength="120" placeholder="简介（可选）" style="padding:8px 10px;min-width:280px;" />
+          <button id="saveProfileBtn" class="btn alt" type="button">保存资料</button>
           <label style="display:flex;align-items:center;gap:6px;">
             <input id="mineOnlyCheckbox" type="checkbox" />
             只看我的上传
@@ -78,9 +85,9 @@
     <div class="container">
       <div class="footer-grid">
         <div>
-          <h4>Yume Arcade</h4>
-          <p>独立开发者的粉色宇宙，收录我的像素冒险、视觉小说和轻度休闲游戏。</p>
-          <p>让每一次点击都像进入galgame
+          <h4>原神到底牛不牛逼</h4>
+          <p>收录像素冒险、视觉小说等游戏</p>
+          <p>让每一次点击都像进入galgame()
           </p>
         </div>
         <div>
@@ -127,18 +134,26 @@
     });
 
     const emailInput = document.getElementById("emailInput");
+    const passwordInput = document.getElementById("passwordInput");
+    const signupBtn = document.getElementById("signupBtn");
+    const loginBtn = document.getElementById("loginBtn");
     const sendOtpBtn = document.getElementById("sendOtpBtn");
+    const resetPasswordBtn = document.getElementById("resetPasswordBtn");
     const logoutBtn = document.getElementById("logoutBtn");
     const authStatus = document.getElementById("authStatus");
     const todoArea = document.getElementById("todoArea");
-    const nicknameInput = document.getElementById("nicknameInput");
-    const saveNicknameBtn = document.getElementById("saveNicknameBtn");
+    const usernameInput = document.getElementById("usernameInput");
+    const displayNameInput = document.getElementById("displayNameInput");
+    const avatarInput = document.getElementById("avatarInput");
+    const bioInput = document.getElementById("bioInput");
+    const saveProfileBtn = document.getElementById("saveProfileBtn");
     const mineOnlyCheckbox = document.getElementById("mineOnlyCheckbox");
     const todoInput = document.getElementById("todoInput");
     const addTodoBtn = document.getElementById("addTodoBtn");
     const todoList = document.getElementById("todoList");
 
     let currentUser = null;
+    let currentProfile = null;
     let channel = null;
     let mineOnly = false;
 
@@ -178,6 +193,63 @@
           `;
         })
         .join("");
+    }
+
+    function normalizeUsername(raw) {
+      return raw.trim().toLowerCase();
+    }
+
+    function isValidUsername(username) {
+      return /^[a-z0-9_]{3,20}$/.test(username);
+    }
+
+    async function ensureProfile() {
+      if (!currentUser) return null;
+      const fallbackName = currentUser.email ? currentUser.email.split("@")[0].slice(0, 20) : `user_${currentUser.id.slice(0, 8)}`;
+
+      const { data: exists, error: selectError } = await supabase
+        .from("profiles")
+        .select("id, username, display_name, avatar_url, bio")
+        .eq("id", currentUser.id)
+        .maybeSingle();
+
+      if (selectError) {
+        authStatus.textContent = `读取资料失败: ${selectError.message}`;
+        return null;
+      }
+
+      if (exists) return exists;
+
+      const seedUsername = normalizeUsername(fallbackName).replace(/[^a-z0-9_]/g, "_").slice(0, 20) || `user_${currentUser.id.slice(0, 8)}`;
+      const safeSeedUsername = seedUsername.length < 3 ? `u_${currentUser.id.slice(0, 6)}` : seedUsername;
+
+      const { data: inserted, error: insertError } = await supabase
+        .from("profiles")
+        .insert({
+          id: currentUser.id,
+          username: safeSeedUsername,
+          display_name: currentUser.email || "",
+          avatar_url: "",
+          bio: ""
+        })
+        .select("id, username, display_name, avatar_url, bio")
+        .single();
+
+      if (insertError) {
+        authStatus.textContent = `初始化资料失败: ${insertError.message}`;
+        return null;
+      }
+
+      return inserted;
+    }
+
+    async function loadProfile() {
+      currentProfile = await ensureProfile();
+      if (!currentProfile) return;
+      usernameInput.value = currentProfile.username || "";
+      displayNameInput.value = currentProfile.display_name || "";
+      avatarInput.value = currentProfile.avatar_url || "";
+      bioInput.value = currentProfile.bio || "";
     }
 
     async function loadTodos() {
@@ -225,23 +297,56 @@
         todoArea.style.display = "none";
         logoutBtn.style.display = "none";
         emailInput.value = "";
+        passwordInput.value = "";
         todoInput.value = "";
-        nicknameInput.value = "";
+        usernameInput.value = "";
+        displayNameInput.value = "";
+        avatarInput.value = "";
+        bioInput.value = "";
         mineOnlyCheckbox.checked = false;
         mineOnly = false;
         todoList.innerHTML = "";
+        currentProfile = null;
         return;
       }
 
-      const currentNickname = (currentUser.user_metadata && currentUser.user_metadata.nickname) || "";
-      const displayName = currentNickname || currentUser.email;
+      await loadProfile();
+      const profileName = (currentProfile && (currentProfile.display_name || currentProfile.username)) || "";
+      const displayName = profileName || currentUser.email;
       authStatus.textContent = `已登录: ${displayName}`;
       todoArea.style.display = "block";
       logoutBtn.style.display = "inline-block";
-      nicknameInput.value = currentNickname;
       await loadTodos();
       await setupRealtime();
     }
+
+    signupBtn.addEventListener("click", async () => {
+      const email = emailInput.value.trim();
+      const password = passwordInput.value.trim();
+      if (!email || !password) {
+        authStatus.textContent = "请输入邮箱和密码。";
+        return;
+      }
+      const { error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: { emailRedirectTo: redirectTo }
+      });
+      authStatus.textContent = error
+        ? `注册失败: ${error.message}`
+        : "注册成功，请先去邮箱完成验证后再登录。";
+    });
+
+    loginBtn.addEventListener("click", async () => {
+      const email = emailInput.value.trim();
+      const password = passwordInput.value.trim();
+      if (!email || !password) {
+        authStatus.textContent = "请输入邮箱和密码。";
+        return;
+      }
+      const { error } = await supabase.auth.signInWithPassword({ email, password });
+      authStatus.textContent = error ? `登录失败: ${error.message}` : "登录成功。";
+    });
 
     sendOtpBtn.addEventListener("click", async () => {
       const email = emailInput.value.trim();
@@ -262,6 +367,20 @@
         : "已发送登录链接，请去邮箱点击确认。";
     });
 
+    resetPasswordBtn.addEventListener("click", async () => {
+      const email = emailInput.value.trim();
+      if (!email) {
+        authStatus.textContent = "请先输入邮箱。";
+        return;
+      }
+      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo
+      });
+      authStatus.textContent = error
+        ? `发送失败: ${error.message}`
+        : "重置密码邮件已发送，请去邮箱确认。";
+    });
+
     logoutBtn.addEventListener("click", async () => {
       await supabase.auth.signOut();
       currentUser = null;
@@ -272,20 +391,54 @@
       await setSessionUI();
     });
 
-    saveNicknameBtn.addEventListener("click", async () => {
+    saveProfileBtn.addEventListener("click", async () => {
       if (!currentUser) return;
-      const nickname = nicknameInput.value.trim();
-      const { error } = await supabase.auth.updateUser({
-        data: { nickname }
-      });
-      if (error) {
-        authStatus.textContent = `保存昵称失败: ${error.message}`;
+      const username = normalizeUsername(usernameInput.value);
+      const displayName = displayNameInput.value.trim();
+      const avatarUrl = avatarInput.value.trim();
+      const bio = bioInput.value.trim();
+
+      if (!isValidUsername(username)) {
+        authStatus.textContent = "用户名需为 3-20 位，仅支持小写字母、数字、下划线。";
         return;
       }
-      await setSessionUI();
-      authStatus.textContent = nickname
-        ? `昵称已更新为: ${nickname}`
-        : `已清空昵称，当前显示邮箱: ${currentUser.email}`;
+
+      const { data: sameUsernameUser, error: usernameError } = await supabase
+        .from("profiles")
+        .select("id")
+        .eq("username", username)
+        .neq("id", currentUser.id)
+        .maybeSingle();
+
+      if (usernameError) {
+        authStatus.textContent = `检查用户名失败: ${usernameError.message}`;
+        return;
+      }
+      if (sameUsernameUser) {
+        authStatus.textContent = "用户名已被占用，请更换。";
+        return;
+      }
+
+      const { error } = await supabase
+        .from("profiles")
+        .upsert(
+          {
+            id: currentUser.id,
+            username,
+            display_name: displayName,
+            avatar_url: avatarUrl,
+            bio
+          },
+          { onConflict: "id" }
+        );
+      if (error) {
+        authStatus.textContent = `保存资料失败: ${error.message}`;
+        return;
+      }
+
+      await loadProfile();
+      await loadTodos();
+      authStatus.textContent = "账号资料已保存。";
     });
 
     mineOnlyCheckbox.addEventListener("change", async () => {
@@ -296,12 +449,12 @@
     addTodoBtn.addEventListener("click", async () => {
       const content = todoInput.value.trim();
       if (!content || !currentUser) return;
-      const nickname = (currentUser.user_metadata && currentUser.user_metadata.nickname) || "";
+      const profileDisplayName = (currentProfile && (currentProfile.display_name || currentProfile.username)) || "";
 
       const { error } = await supabase.from("todos").insert({
         user_id: currentUser.id,
         user_email: currentUser.email || "",
-        user_name: nickname,
+        user_name: profileDisplayName,
         content,
         done: false
       });
