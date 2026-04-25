@@ -30,6 +30,7 @@
         <a class="active" href="./index.html">首页</a>
         <a href="./games.html">游戏库</a>
         <a href="./devlog.html">开发日志</a>
+        <a href="./auth.html">账号</a>
       </nav>
     </div>
   </header>
@@ -52,11 +53,11 @@
       <p>登录同一账号后，在不同设备上可实时看到待办变更。</p>
       <div style="display:flex;gap:8px;flex-wrap:wrap;margin:10px 0 16px;">
         <input id="emailInput" type="email" placeholder="输入邮箱用于登录" style="padding:8px 10px;min-width:240px;" />
+        <input id="registerUsernameInput" type="text" maxlength="20" placeholder="注册用户名（3-20位）" style="padding:8px 10px;min-width:240px;" />
         <input id="passwordInput" type="password" placeholder="输入密码（至少6位）" style="padding:8px 10px;min-width:240px;" />
         <button id="signupBtn" class="btn" type="button">注册</button>
         <button id="loginBtn" class="btn" type="button">密码登录</button>
-        <button id="sendOtpBtn" class="btn alt" type="button">发送登录链接</button>
-        <button id="resetPasswordBtn" class="btn alt" type="button">重置密码邮件</button>
+        <a class="btn alt" href="./auth.html">账号页</a>
         <button id="logoutBtn" class="btn alt" type="button" style="display:none;">退出登录</button>
       </div>
       <p id="authStatus">未登录</p>
@@ -126,11 +127,10 @@
     const supabase = createSupabaseClient();
 
     const emailInput = document.getElementById("emailInput");
+    const registerUsernameInput = document.getElementById("registerUsernameInput");
     const passwordInput = document.getElementById("passwordInput");
     const signupBtn = document.getElementById("signupBtn");
     const loginBtn = document.getElementById("loginBtn");
-    const sendOtpBtn = document.getElementById("sendOtpBtn");
-    const resetPasswordBtn = document.getElementById("resetPasswordBtn");
     const logoutBtn = document.getElementById("logoutBtn");
     const authStatus = document.getElementById("authStatus");
     const todoArea = document.getElementById("todoArea");
@@ -288,6 +288,7 @@
         todoArea.style.display = "none";
         logoutBtn.style.display = "none";
         emailInput.value = "";
+        registerUsernameInput.value = "";
         passwordInput.value = "";
         todoInput.value = "";
         usernameInput.value = "";
@@ -313,19 +314,63 @@
 
     signupBtn.addEventListener("click", async () => {
       const email = emailInput.value.trim();
+      const username = normalizeUsername(registerUsernameInput.value);
       const password = passwordInput.value.trim();
-      if (!email || !password) {
-        authStatus.textContent = "请输入邮箱和密码。";
+      if (!email || !password || !username) {
+        authStatus.textContent = "请输入注册用户名、邮箱和密码。";
         return;
       }
-      const { error } = await supabase.auth.signUp({
+      if (!isValidUsername(username)) {
+        authStatus.textContent = "注册用户名需为 3-20 位，仅支持小写字母、数字、下划线。";
+        return;
+      }
+      const { data: sameUsernameUser, error: usernameError } = await supabase
+        .from("profiles")
+        .select("id")
+        .eq("username", username)
+        .maybeSingle();
+      if (usernameError) {
+        authStatus.textContent = `检查用户名失败: ${usernameError.message}`;
+        return;
+      }
+      if (sameUsernameUser) {
+        authStatus.textContent = "用户名已被占用，请更换。";
+        return;
+      }
+
+      const { data: signUpData, error } = await supabase.auth.signUp({
         email,
         password,
-        options: { emailRedirectTo: redirectTo }
+        options: {
+          emailRedirectTo: redirectTo,
+          data: { nickname: username }
+        }
       });
-      authStatus.textContent = error
-        ? `注册失败: ${error.message}`
-        : "注册成功，请先去邮箱完成验证后再登录。";
+
+      if (error) {
+        authStatus.textContent = `注册失败: ${error.message}`;
+        return;
+      }
+
+      const uid = signUpData.user?.id;
+      if (uid) {
+        const { error: profileError } = await supabase.from("profiles").upsert(
+          {
+            id: uid,
+            username,
+            display_name: username,
+            avatar_url: "",
+            bio: ""
+          },
+          { onConflict: "id" }
+        );
+        if (profileError) {
+          authStatus.textContent = `注册成功，但资料初始化失败: ${profileError.message}`;
+          return;
+        }
+      }
+
+      authStatus.textContent = "注册成功，请使用邮箱和密码登录。";
     });
 
     loginBtn.addEventListener("click", async () => {
@@ -337,39 +382,6 @@
       }
       const { error } = await supabase.auth.signInWithPassword({ email, password });
       authStatus.textContent = error ? `登录失败: ${error.message}` : "登录成功。";
-    });
-
-    sendOtpBtn.addEventListener("click", async () => {
-      const email = emailInput.value.trim();
-      if (!email) {
-        authStatus.textContent = "请先输入邮箱。";
-        return;
-      }
-
-      const { error } = await supabase.auth.signInWithOtp({
-        email,
-        options: {
-          emailRedirectTo: redirectTo
-        }
-      });
-
-      authStatus.textContent = error
-        ? `发送失败: ${error.message}`
-        : "已发送登录链接，请去邮箱点击确认。";
-    });
-
-    resetPasswordBtn.addEventListener("click", async () => {
-      const email = emailInput.value.trim();
-      if (!email) {
-        authStatus.textContent = "请先输入邮箱。";
-        return;
-      }
-      const { error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo
-      });
-      authStatus.textContent = error
-        ? `发送失败: ${error.message}`
-        : "重置密码邮件已发送，请去邮箱确认。";
     });
 
     logoutBtn.addEventListener("click", async () => {

@@ -29,6 +29,7 @@
         <a href="./index.html">首页</a>
         <a class="active" href="./games.html">游戏库</a>
         <a href="./devlog.html">开发日志</a>
+        <a href="./auth.html">账号</a>
       </nav>
     </div>
   </header>
@@ -39,8 +40,7 @@
     </section>
     <section class="upload-panel panel">
       <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px;">
-        <input id="emailInput" type="email" placeholder="输入邮箱用于登录" style="padding:8px 10px;min-width:240px;" />
-        <button id="sendOtpBtn" class="btn" type="button">发送登录链接</button>
+        <a id="goAuthBtn" class="btn alt" href="./auth.html">前往账号页</a>
         <button id="logoutBtn" class="btn alt" type="button" style="display:none;">退出登录</button>
       </div>
       <p id="authStatus" style="margin:0 0 12px;">未登录（登录后可上传）</p>
@@ -91,14 +91,11 @@
   </footer>
   <script src="./effects.js"></script>
   <script type="module">
-    import { createSupabaseClient, getCurrentUser, getRedirectTo } from "./auth.js";
-
-    const redirectTo = getRedirectTo();
+    import { createSupabaseClient, getCurrentUser } from "./auth.js";
     const supabase = createSupabaseClient();
 
     const gamesEl = document.getElementById("games");
-    const emailInput = document.getElementById("emailInput");
-    const sendOtpBtn = document.getElementById("sendOtpBtn");
+    const goAuthBtn = document.getElementById("goAuthBtn");
     const logoutBtn = document.getElementById("logoutBtn");
     const authStatus = document.getElementById("authStatus");
     const coverInput = document.getElementById("coverInput");
@@ -175,29 +172,16 @@
     async function refreshAuthUI() {
       currentUser = await getCurrentUser(supabase);
       if (!currentUser) {
-        authStatus.textContent = "未登录（登录后可上传）";
+        authStatus.textContent = "未登录（请前往账号页登录后再上传）";
         logoutBtn.style.display = "none";
+        goAuthBtn.style.display = "inline-block";
       } else {
         const nickname = currentUser.user_metadata?.nickname || currentUser.email;
         authStatus.textContent = `已登录: ${nickname}`;
         logoutBtn.style.display = "inline-block";
+        goAuthBtn.style.display = "none";
       }
     }
-
-    sendOtpBtn.addEventListener("click", async () => {
-      const email = emailInput.value.trim();
-      if (!email) {
-        authStatus.textContent = "请先输入邮箱。";
-        return;
-      }
-      const { error } = await supabase.auth.signInWithOtp({
-        email,
-        options: { emailRedirectTo: redirectTo }
-      });
-      authStatus.textContent = error
-        ? `发送失败: ${error.message}`
-        : "已发送登录链接，请去邮箱确认。";
-    });
 
     logoutBtn.addEventListener("click", async () => {
       await supabase.auth.signOut();
