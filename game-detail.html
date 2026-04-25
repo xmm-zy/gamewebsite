@@ -74,17 +74,9 @@
   </footer>
   <script src="./effects.js"></script>
   <script type="module">
-    import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
+    import { createSupabaseClient } from "./auth.js";
 
-    const SUPABASE_URL = "https://dehjilvkbkctgwfwmmgu.supabase.co";
-    const SUPABASE_ANON_KEY = "sb_publishable_bd3h6vaef45uI8Gximh9GQ_pOMwxouA";
-    const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
-      auth: {
-        persistSession: true,
-        autoRefreshToken: true,
-        detectSessionInUrl: true
-      }
-    });
+    const supabase = createSupabaseClient();
 
     const detailRoot = document.getElementById("detailRoot");
     const params = new URLSearchParams(window.location.search);
