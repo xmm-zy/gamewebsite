@@ -6,12 +6,16 @@
   <title>账号 | 爱音的游戏小站</title>
   <meta name="description" content="爱音的游戏小站账号页：注册与登录，管理你的上传与资料。" />
   <link rel="stylesheet" href="./styles.css" />
+  <link rel="icon" type="image/svg+xml" href="./images/anon-mascot.svg" />
 </head>
 <body class="theme-anon">
   <canvas id="bgEffects" class="bg-effects"></canvas>
   <header class="nav">
     <div class="container nav-inner">
-      <a class="brand" href="./index.html">爱音的游戏小站<span class="badge">账号</span></a>
+      <a class="brand" href="./index.html">
+        <img class="brand-mascot" src="./images/anon-mascot.svg" width="28" height="28" alt="" decoding="async" />
+        爱音的游戏小站<span class="badge">账号</span>
+      </a>
       <nav class="menu">
         <a href="./index.html">首页</a>
         <a href="./games.html">游戏库</a>
@@ -23,14 +27,21 @@
 
   <main class="container">
     <section class="hero hero--anon">
-      <p class="hero-kicker">千早爱音 · 后台区</p>
-      <h1>账号中心</h1>
-      <p>注册、登录、管理资料——像给乐队名簿签到一样简单。</p>
+      <div class="hero-page-grid">
+        <div>
+          <p class="hero-kicker">千早爱音 · 后台区</p>
+          <h1>账号中心</h1>
+          <p>注册、登录、管理资料——像给乐队名簿签到一样简单。</p>
+        </div>
+        <figure class="hero-page-fig">
+          <img src="./images/chihaya-anon-offstage.png" alt="千早爱音 日常印象（参考图）" width="400" height="300" loading="eager" decoding="async" />
+        </figure>
+      </div>
     </section>
 
     <section class="panel" style="max-width:760px;margin:18px auto;padding:20px;">
       <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px;">
-        <button id="showLoginBtn" class="btn" type="button">登录</button>
+        <button id="showLoginBtn" class="btn btn--mascot" type="button">登录</button>
         <button id="showRegisterBtn" class="btn alt" type="button">注册</button>
         <button id="logoutBtn" class="btn alt" type="button" style="display:none;">退出登录</button>
       </div>
@@ -45,7 +56,7 @@
           <label for="loginPasswordInput">密码</label>
           <input id="loginPasswordInput" type="password" placeholder="输入密码" />
         </div>
-        <button id="loginBtn" class="btn" type="button">登录账号</button>
+        <button id="loginBtn" class="btn btn--mascot" type="button">登录账号</button>
       </div>
 
       <div id="registerForm" style="display:none;">
@@ -65,7 +76,7 @@
           <label for="registerPasswordConfirmInput">确认密码</label>
           <input id="registerPasswordConfirmInput" type="password" placeholder="再次输入密码" />
         </div>
-        <button id="registerBtn" class="btn" type="button">创建账号</button>
+        <button id="registerBtn" class="btn btn--mascot" type="button">创建账号</button>
       </div>
     </section>
   </main>

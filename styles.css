@@ -37,6 +37,149 @@ body.theme-anon {
     linear-gradient(180deg, #fff5fb, #fffbff 60%, #fff);
 }
 
+/* 全站低透明度：原创 SVG 小图腾平铺，从画布透明处透出 */
+body.theme-anon::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -2;
+  background: transparent url("images/anon-mascot.svg") repeat;
+  background-size: 92px 92px;
+  opacity: 0.06;
+  pointer-events: none;
+}
+
+.brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.brand-mascot {
+  width: 28px;
+  height: 28px;
+  flex-shrink: 0;
+  object-fit: contain;
+  filter: drop-shadow(0 2px 4px #e85d9444);
+}
+
+/* 主色按钮前加小图腾（线稿反白） */
+.btn--mascot {
+  position: relative;
+  padding-left: 40px;
+}
+
+.btn--mascot::before {
+  content: "";
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 20px;
+  height: 20px;
+  background: url("images/anon-mascot.svg") center / contain no-repeat;
+  filter: brightness(0) invert(1);
+  opacity: 0.9;
+  pointer-events: none;
+}
+
+/* 四格印象图集 */
+.anon-quilt {
+  margin: 8px 0 32px;
+  padding: 18px 20px 20px;
+}
+
+.anon-quilt-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+  margin-top: 8px;
+}
+
+.anon-quilt figcaption {
+  font-size: 12px;
+  color: #7a4a67;
+  margin-top: 6px;
+  text-align: center;
+}
+
+.anon-quilt-fig {
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 0;
+}
+
+.anon-quilt-fig img {
+  width: 100%;
+  height: auto;
+  max-height: 200px;
+  object-fit: contain;
+  border-radius: 16px;
+  border: 1px solid var(--line);
+  background: #fff8fc;
+  box-shadow: 0 8px 20px #e85d9422;
+}
+
+/* 子页：英雄区+配图（游戏库/日志/账号/详情用） */
+.hero-page-grid {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(200px, 400px);
+  gap: clamp(20px, 3vw, 32px);
+  align-items: center;
+  max-width: 1020px;
+  margin: 0 auto;
+  text-align: left;
+}
+
+.hero-page-grid .hero-kicker,
+.hero-page-grid h1,
+.hero-page-grid > p {
+  text-align: left;
+}
+
+.hero-page-fig {
+  margin: 0;
+}
+
+.hero-page-fig img {
+  display: block;
+  width: 100%;
+  max-height: min(48vh, 360px);
+  object-fit: contain;
+  border-radius: 20px;
+  border: 1px solid var(--line);
+  background: #fff8fc;
+  box-shadow: 0 12px 32px #d75f9928;
+}
+
+/* 游戏详情：顶栏四连缩略图 */
+.anon-detail-strip {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin: 0 0 16px;
+  padding: 10px 12px;
+  border-radius: 16px;
+  border: 1px dashed var(--line);
+  background: #fff8fc99;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.anon-detail-strip img {
+  width: calc(25% - 6px);
+  min-width: 72px;
+  max-width: 140px;
+  height: 64px;
+  object-fit: cover;
+  border-radius: 10px;
+  border: 1px solid #f3c1db;
+}
+
 .bg-effects {
   position: fixed;
   inset: 0;
@@ -428,7 +571,30 @@ body.theme-anon {
   gap: 8px;
 }
 
+@media (max-width: 1000px) {
+  .hero-page-grid {
+    grid-template-columns: 1fr;
+    text-align: center;
+  }
+
+  .hero-page-grid .hero-kicker,
+  .hero-page-grid h1,
+  .hero-page-grid > p {
+    text-align: center;
+  }
+
+  .hero-page-fig {
+    order: -1;
+    max-width: 400px;
+    margin: 0 auto;
+  }
+}
+
 @media (max-width: 900px) {
+  .anon-quilt-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
   .hero-anon-grid {
     grid-template-columns: 1fr;
   }
@@ -468,6 +634,22 @@ body.theme-anon {
 
   .footer-grid {
     grid-template-columns: 1fr 1fr;
+  }
+}
+
+@media (max-width: 520px) {
+  .anon-quilt-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .anon-detail-strip {
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  .anon-detail-strip img {
+    width: 46%;
+    max-width: none;
   }
 }
 

@@ -12,19 +12,23 @@
   <meta property="og:title" content="游戏库 | 爱音的游戏小站" />
   <meta property="og:description" content="MyGO 风粉色界面下的游戏陈列架。" />
   <meta property="og:url" content="https://anonweb.top/games.html" />
-  <meta property="og:image" content="https://anonweb.top/og-cover.svg" />
+  <meta property="og:image" content="https://anonweb.top/images/chihaya-anon-stage.png" />
   <meta property="og:image:alt" content="爱音的游戏小站 — 游戏库" />
   <meta name="twitter:card" content="summary_large_image" />
   <meta name="twitter:title" content="游戏库 | 爱音的游戏小站" />
   <meta name="twitter:description" content="MyGO 风粉色界面下的游戏陈列架。" />
-  <meta name="twitter:image" content="https://anonweb.top/og-cover.svg" />
+  <meta name="twitter:image" content="https://anonweb.top/images/chihaya-anon-stage.png" />
   <link rel="stylesheet" href="./styles.css" />
+  <link rel="icon" type="image/svg+xml" href="./images/anon-mascot.svg" />
 </head>
 <body class="theme-anon">
   <canvas id="bgEffects" class="bg-effects"></canvas>
   <header class="nav">
     <div class="container nav-inner">
-      <a class="brand" href="./index.html">爱音的游戏小站<span class="badge">游戏库</span></a>
+      <a class="brand" href="./index.html">
+        <img class="brand-mascot" src="./images/anon-mascot.svg" width="28" height="28" alt="" decoding="async" />
+        爱音的游戏小站<span class="badge">游戏库</span>
+      </a>
       <nav class="menu">
         <a href="./index.html">首页</a>
         <a class="active" href="./games.html">游戏库</a>
@@ -35,9 +39,16 @@
   </header>
   <main class="container">
     <section class="hero hero--anon">
-      <p class="hero-kicker">千早爱音 · 陈列架</p>
-      <h1>游戏库</h1>
-      <p>像把单曲封面摆上架：上传封面、填链接，就会出现在这片粉色灯海里。</p>
+      <div class="hero-page-grid">
+        <div>
+          <p class="hero-kicker">千早爱音 · 陈列架</p>
+          <h1>游戏库</h1>
+          <p>像把单曲封面摆上架：上传封面、填链接，就会出现在这片粉色灯海里。</p>
+        </div>
+        <figure class="hero-page-fig">
+          <img src="./images/chihaya-anon-stage.png" alt="千早爱音 舞台印象（参考图）" width="400" height="300" loading="eager" decoding="async" />
+        </figure>
+      </div>
     </section>
     <section class="upload-panel panel">
       <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px;">
@@ -53,7 +64,7 @@
         <label for="urlInput">游戏链接</label>
         <input id="urlInput" type="url" placeholder="https://example.com/my-game" />
       </div>
-      <button id="addBtn" class="btn" type="button">添加游戏卡片</button>
+      <button id="addBtn" class="btn btn--mascot" type="button">添加游戏卡片</button>
     </section>
     <section id="games" class="games"></section>
   </main>
@@ -134,7 +145,7 @@
               <div class="game-info">
                 <h3 class="game-title">${escapeHtml(game.title)}</h3>
                 <p class="game-tip">上传者：${escapeHtml(owner)}</p>
-                <a class="btn" href="./game-detail.html?id=${encodeURIComponent(game.id)}">查看详情</a>
+                <a class="btn btn--mascot" href="./game-detail.html?id=${encodeURIComponent(game.id)}">查看详情</a>
                 ${deleteAction}
               </div>
             </article>

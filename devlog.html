@@ -12,19 +12,23 @@
   <meta property="og:title" content="开发日志 | 爱音的游戏小站" />
   <meta property="og:description" content="千早爱音印象主题站点的开发笔记与更新。" />
   <meta property="og:url" content="https://anonweb.top/devlog.html" />
-  <meta property="og:image" content="https://anonweb.top/og-cover.svg" />
+  <meta property="og:image" content="https://anonweb.top/images/chihaya-anon-comic.png" />
   <meta property="og:image:alt" content="爱音的游戏小站 — 开发日志" />
   <meta name="twitter:card" content="summary_large_image" />
   <meta name="twitter:title" content="开发日志 | 爱音的游戏小站" />
   <meta name="twitter:description" content="千早爱音印象主题站点的开发笔记与更新。" />
-  <meta name="twitter:image" content="https://anonweb.top/og-cover.svg" />
+  <meta name="twitter:image" content="https://anonweb.top/images/chihaya-anon-comic.png" />
   <link rel="stylesheet" href="./styles.css" />
+  <link rel="icon" type="image/svg+xml" href="./images/anon-mascot.svg" />
 </head>
 <body class="theme-anon">
   <canvas id="bgEffects" class="bg-effects"></canvas>
   <header class="nav">
     <div class="container nav-inner">
-      <a class="brand" href="./index.html">爱音的游戏小站<span class="badge">开发中</span></a>
+      <a class="brand" href="./index.html">
+        <img class="brand-mascot" src="./images/anon-mascot.svg" width="28" height="28" alt="" decoding="async" />
+        爱音的游戏小站<span class="badge">开发中</span>
+      </a>
       <nav class="menu">
         <a href="./index.html">首页</a>
         <a href="./games.html">游戏库</a>
@@ -35,9 +39,16 @@
   </header>
   <main class="container">
     <section class="hero hero--anon">
-      <p class="hero-kicker">千早爱音 · 台侧手记</p>
-      <h1>开发日志</h1>
-      <p>记录灯效、界面与玩法的每次 Encore，像追 MyGO 的下一集一样追版本。</p>
+      <div class="hero-page-grid">
+        <div>
+          <p class="hero-kicker">千早爱音 · 台侧手记</p>
+          <h1>开发日志</h1>
+          <p>记录灯效、界面与玩法的每次 Encore，像追 MyGO 的下一集一样追版本。</p>
+        </div>
+        <figure class="hero-page-fig">
+          <img src="./images/chihaya-anon-comic.png" alt="千早爱音 四格印象（参考图）" width="400" height="360" loading="eager" decoding="async" />
+        </figure>
+      </div>
     </section>
     <section class="timeline">
       <article class="timeline-item panel">

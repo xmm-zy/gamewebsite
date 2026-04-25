@@ -19,12 +19,16 @@
   <meta name="twitter:description" content="千早爱音印象主题下的游戏详情与开玩入口。" />
   <meta name="twitter:image" content="https://anonweb.top/og-cover.svg" />
   <link rel="stylesheet" href="./styles.css" />
+  <link rel="icon" type="image/svg+xml" href="./images/anon-mascot.svg" />
 </head>
 <body class="theme-anon">
   <canvas id="bgEffects" class="bg-effects"></canvas>
   <header class="nav">
     <div class="container nav-inner">
-      <a class="brand" href="./index.html">爱音的游戏小站<span class="badge">详情页</span></a>
+      <a class="brand" href="./index.html">
+        <img class="brand-mascot" src="./images/anon-mascot.svg" width="28" height="28" alt="" decoding="async" />
+        爱音的游戏小站<span class="badge">详情页</span>
+      </a>
       <nav class="menu">
         <a href="./index.html">首页</a>
         <a class="active" href="./games.html">游戏库</a>
@@ -34,8 +38,14 @@
     </div>
   </header>
   <main class="container">
-    <section class="hero hero--anon">
+    <section class="hero hero--anon" style="padding-top: 36px;">
       <p class="hero-kicker">千早爱音 · 单曲页</p>
+      <div class="anon-detail-strip" aria-label="爱音印象缩略条">
+        <img src="./images/chihaya-anon-hero.png" alt="" width="120" height="64" loading="lazy" />
+        <img src="./images/chihaya-anon-comic.png" alt="" width="120" height="64" loading="lazy" />
+        <img src="./images/chihaya-anon-stage.png" alt="" width="120" height="64" loading="lazy" />
+        <img src="./images/chihaya-anon-offstage.png" alt="" width="120" height="64" loading="lazy" />
+      </div>
       <h1>游戏详情</h1>
       <p>封面、说明与外链都在这一页——准备好就按下「开始游戏」，像在 Live 里进主歌。</p>
     </section>
@@ -137,7 +147,7 @@
             </p>
             <p class="detail-desc" style="opacity:0.8;">上传者：${escapeHtml(owner)}</p>
             <div class="detail-actions">
-              <a class="btn" href="${escapeHtml(game.url)}" target="_blank" rel="noopener noreferrer">开始游戏</a>
+              <a class="btn btn--mascot" href="${escapeHtml(game.url)}" target="_blank" rel="noopener noreferrer">开始游戏</a>
               <a class="btn alt" href="./games.html">返回游戏库</a>
             </div>
           </div>
