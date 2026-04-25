@@ -48,7 +48,7 @@ function drawPetal(p) {
   ctx.save();
   ctx.translate(p.x, p.y);
   ctx.rotate(Math.sin(p.wobble) * 0.5);
-  ctx.fillStyle = "rgba(255, 140, 194, 0.45)";
+  ctx.fillStyle = "rgba(255, 130, 185, 0.42)";
   ctx.beginPath();
   ctx.ellipse(0, 0, p.size * 0.55, p.size, 0.2, 0, Math.PI * 2);
   ctx.fill();

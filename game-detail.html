@@ -3,28 +3,28 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Game Detail | QQQ's Game Website</title>
-  <meta name="description" content="View game details, cover art, and launch the selected game from QQQ's Game Website." />
+  <title>游戏详情 | 爱音的游戏小站</title>
+  <meta name="description" content="爱音的游戏小站 — 查看游戏详情、封面与外链，一键开玩。" />
   <meta name="robots" content="index,follow,max-image-preview:large" />
   <link rel="canonical" href="https://anonweb.top/game-detail.html" />
   <meta property="og:type" content="website" />
-  <meta property="og:site_name" content="QQQ's Game Website" />
-  <meta property="og:title" content="Game Detail | QQQ's Game Website" />
-  <meta property="og:description" content="View game details, cover art, and launch the selected game." />
+  <meta property="og:site_name" content="爱音的游戏小站" />
+  <meta property="og:title" content="游戏详情 | 爱音的游戏小站" />
+  <meta property="og:description" content="千早爱音印象主题下的游戏详情与开玩入口。" />
   <meta property="og:url" content="https://anonweb.top/game-detail.html" />
   <meta property="og:image" content="https://anonweb.top/og-cover.svg" />
-  <meta property="og:image:alt" content="QQQ's Game Website pink anime social cover" />
+  <meta property="og:image:alt" content="爱音的游戏小站 — 游戏详情" />
   <meta name="twitter:card" content="summary_large_image" />
-  <meta name="twitter:title" content="Game Detail | QQQ's Game Website" />
-  <meta name="twitter:description" content="View game details, cover art, and launch the selected game." />
+  <meta name="twitter:title" content="游戏详情 | 爱音的游戏小站" />
+  <meta name="twitter:description" content="千早爱音印象主题下的游戏详情与开玩入口。" />
   <meta name="twitter:image" content="https://anonweb.top/og-cover.svg" />
   <link rel="stylesheet" href="./styles.css" />
 </head>
-<body>
+<body class="theme-anon">
   <canvas id="bgEffects" class="bg-effects"></canvas>
   <header class="nav">
     <div class="container nav-inner">
-      <a class="brand" href="./index.html">原神到底牛不牛逼<span class="badge">ANIME PINK</span></a>
+      <a class="brand" href="./index.html">爱音的游戏小站<span class="badge">详情页</span></a>
       <nav class="menu">
         <a href="./index.html">首页</a>
         <a class="active" href="./games.html">游戏库</a>
@@ -34,9 +34,10 @@
     </div>
   </header>
   <main class="container">
-    <section class="hero">
+    <section class="hero hero--anon">
+      <p class="hero-kicker">千早爱音 · 单曲页</p>
       <h1>游戏详情</h1>
-      <p>在这里查看作品信息，然后点击按钮正式进入游戏。</p>
+      <p>封面、说明与外链都在这一页——准备好就按下「开始游戏」，像在 Live 里进主歌。</p>
     </section>
     <section id="detailRoot" class="detail-wrap panel"></section>
   </main>
@@ -44,9 +45,9 @@
     <div class="container">
       <div class="footer-grid">
         <div>
-          <h4>所以原神到底牛不牛逼</h4>
-          <p>收录我的像素冒险、视觉小说等游戏</p>
-          <p>让每一次点击都像进入dalgame</p>
+          <h4>爱音的游戏小站</h4>
+          <p>千早爱音印象主题站：轻量独立游戏展示与分享。</p>
+          <p class="footer-note">本站点为粉丝向主题，与官方无关。</p>
         </div>
         <div>
           <h4>产品</h4>
@@ -68,8 +69,8 @@
         </div>
       </div>
       <div class="copyright">
-        <span>© 2026 qqq's game website. All rights reserved.</span>
-        <span>Made with Love & Pink</span>
+        <span>© 2026 爱音的游戏小站</span>
+        <span>千早爱音 印象色 · 非商业用途</span>
       </div>
     </div>
   </footer>
@@ -120,8 +121,8 @@
           </div>
         `;
       } else {
-        document.title = `${game.title} | QQQ's Game Website`;
-        const description = `Play ${game.title} on QQQ's Game Website. View details then launch the game.`;
+        document.title = `${game.title} | 爱音的游戏小站`;
+        const description = `${game.title} — 爱音的游戏小站游戏详情与开玩入口。`;
         const metaDescription = document.querySelector('meta[name="description"]');
         if (metaDescription) metaDescription.setAttribute("content", description);
         const owner = game.user_name || game.user_email || "未知用户";
@@ -131,8 +132,8 @@
           <div>
             <h2 class="detail-title">${escapeHtml(game.title)}</h2>
             <p class="detail-desc">
-              这是你的游戏作品展示页。你可以在这里放置剧情简介、玩法亮点、操作说明。
-              当前已绑定游戏链接，点击下方按钮即可开始游玩。
+              这里是作品的「单曲页」：可写剧情梗概、亮点与操作说明。
+              已绑定外链时，点击下方按钮即可开玩。
             </p>
             <p class="detail-desc" style="opacity:0.8;">上传者：${escapeHtml(owner)}</p>
             <div class="detail-actions">

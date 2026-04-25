@@ -3,15 +3,15 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>账号登录 | QQQ's Game Website</title>
-  <meta name="description" content="使用账号密码登录 QQQ's Game Website，像 GitHub 一样管理你的账号并发布游戏。" />
+  <title>账号 | 爱音的游戏小站</title>
+  <meta name="description" content="爱音的游戏小站账号页：注册与登录，管理你的上传与资料。" />
   <link rel="stylesheet" href="./styles.css" />
 </head>
-<body>
+<body class="theme-anon">
   <canvas id="bgEffects" class="bg-effects"></canvas>
   <header class="nav">
     <div class="container nav-inner">
-      <a class="brand" href="./index.html">QQQ's GAME WEBSITE<span class="badge">ANONWEB.TOP</span></a>
+      <a class="brand" href="./index.html">爱音的游戏小站<span class="badge">账号</span></a>
       <nav class="menu">
         <a href="./index.html">首页</a>
         <a href="./games.html">游戏库</a>
@@ -22,9 +22,10 @@
   </header>
 
   <main class="container">
-    <section class="hero">
+    <section class="hero hero--anon">
+      <p class="hero-kicker">千早爱音 · 后台区</p>
       <h1>账号中心</h1>
-      <p>使用账号系统登录，避免邮箱链接跳转不稳定。</p>
+      <p>注册、登录、管理资料——像给乐队名簿签到一样简单。</p>
     </section>
 
     <section class="panel" style="max-width:760px;margin:18px auto;padding:20px;">
@@ -68,6 +69,40 @@
       </div>
     </section>
   </main>
+
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-grid">
+        <div>
+          <h4>爱音的游戏小站</h4>
+          <p>千早爱音与 MyGO!!!!! 印象主题下的轻量游戏站与账号系统。</p>
+          <p class="footer-note">本站点为粉丝向主题，与官方无关。BanG Dream! 等版权归各权利方所有。</p>
+        </div>
+        <div>
+          <h4>导航</h4>
+          <a href="./index.html">首页</a>
+          <a href="./games.html">游戏库</a>
+          <a href="./devlog.html">开发日志</a>
+        </div>
+        <div>
+          <h4>资源</h4>
+          <a href="./devlog.html">设计笔记</a>
+          <a href="./games.html">封面库</a>
+          <a href="./index.html">FAQ</a>
+        </div>
+        <div>
+          <h4>联系我</h4>
+          <a href="#">Bilibili</a>
+          <a href="#">X / Twitter</a>
+          <a href="#">邮箱</a>
+        </div>
+      </div>
+      <div class="copyright">
+        <span>© 2026 爱音的游戏小站</span>
+        <span>非商业粉丝向主题</span>
+      </div>
+    </div>
+  </footer>
 
   <script src="./effects.js"></script>
   <script type="module">

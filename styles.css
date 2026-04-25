@@ -1,12 +1,15 @@
 :root {
-  --pink-1: #fff0f7;
-  --pink-2: #ffd6ea;
-  --pink-3: #ff8fc2;
-  --pink-4: #ff5ea7;
-  --pink-5: #d93b85;
-  --ink: #3a2741;
+  /* 千早爱音 / MyGO!!!!! 印象：主唱粉、舞台高光与深玫瑰字色 */
+  --pink-1: #fff4fb;
+  --pink-2: #ffd8ed;
+  --pink-3: #ff9ed0;
+  --pink-4: #ff5fa3;
+  --pink-5: #c9367a;
+  --anon-coral: #ff7b9c;
+  --stage-1: rgba(255, 160, 210, 0.35);
+  --ink: #3a2a3d;
   --card: #ffffffd9;
-  --line: #f5b6d6;
+  --line: #f0b3d4;
 }
 
 * {
@@ -18,10 +21,20 @@ body {
   color: var(--ink);
   font-family: "Segoe UI", "Microsoft YaHei", sans-serif;
   background:
-    radial-gradient(circle at 20% 10%, #ffd5ea 0, transparent 35%),
-    radial-gradient(circle at 90% 20%, #ffbddd 0, transparent 30%),
-    linear-gradient(180deg, var(--pink-1), #fff);
+    radial-gradient(ellipse 120% 80% at 50% -15%, var(--stage-1) 0, transparent 55%),
+    radial-gradient(circle at 18% 12%, #ffd0ea 0, transparent 36%),
+    radial-gradient(circle at 88% 18%, #ffc4df 0, transparent 32%),
+    linear-gradient(180deg, var(--pink-1) 0%, #fffbfe 45%, #fff 100%);
   min-height: 100vh;
+}
+
+/* 全站主舞台感：与「千早爱音」印象主题搭配 */
+body.theme-anon {
+  background:
+    radial-gradient(ellipse 100% 60% at 50% 0%, rgba(255, 150, 195, 0.28) 0, transparent 50%),
+    radial-gradient(ellipse 80% 50% at 0% 100%, rgba(255, 200, 230, 0.45) 0, transparent 45%),
+    radial-gradient(ellipse 70% 45% at 100% 90%, rgba(255, 180, 210, 0.35) 0, transparent 40%),
+    linear-gradient(180deg, #fff5fb, #fffbff 60%, #fff);
 }
 
 .bg-effects {
@@ -107,6 +120,68 @@ body {
   max-width: 760px;
   font-size: 16px;
   color: #5a3d5f;
+}
+
+/* 英雄区：舞台灯 + 吉他拨片轮廓装饰（纯 CSS，非角色图） */
+.hero--anon {
+  position: relative;
+  padding-top: 64px;
+  padding-bottom: 48px;
+}
+
+.hero--anon::before {
+  content: "";
+  position: absolute;
+  inset: 12% 8% auto 8%;
+  height: 180px;
+  max-height: 28vh;
+  border-radius: 50%;
+  background: linear-gradient(145deg, rgba(255, 255, 255, 0.75) 0%, rgba(255, 200, 228, 0.25) 100%);
+  border: 1px solid rgba(255, 150, 195, 0.35);
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.5) inset, 0 20px 50px rgba(210, 80, 130, 0.12);
+  pointer-events: none;
+  z-index: 0;
+  transform: rotate(-3deg);
+}
+
+.hero--anon::after {
+  content: "";
+  position: absolute;
+  right: 6%;
+  top: 18%;
+  width: 72px;
+  height: 98px;
+  border-radius: 50% 50% 45% 45%;
+  background: linear-gradient(160deg, rgba(255, 150, 190, 0.35), rgba(255, 255, 255, 0.2));
+  border: 1px solid rgba(255, 120, 170, 0.35);
+  transform: rotate(18deg);
+  pointer-events: none;
+  z-index: 0;
+}
+
+.hero--anon .hero-kicker,
+.hero--anon h1,
+.hero--anon p,
+.hero--anon .cta-row {
+  position: relative;
+  z-index: 1;
+}
+
+.hero-kicker {
+  margin: 0 0 10px;
+  font-size: 12px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: #b8457a;
+  font-weight: 700;
+}
+
+.footer-note {
+  font-size: 12px;
+  line-height: 1.6;
+  color: #9a6f88;
+  margin-top: 8px;
+  max-width: 420px;
 }
 
 .panel {
